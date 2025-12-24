@@ -2,6 +2,8 @@ use std::marker::PhantomData;
 
 use bevy::{prelude::*, render::render_resource::AsBindGroup, shader::ShaderRef, sprite_render::{Material2d, Material2dPlugin}, window::WindowResized};
 
+use crate::shader_utils::common::MyShaderLibraryPlugin;
+
 // 共通用の2Dプラグイン
 // シェーダのパスを型レベルで指定することで、複数のシェーダを切り替えて使えるようにする
 // 仮想的な平面上での座標をシェーダーに渡し、またマウス操作等によるインタラクションも可能にする
@@ -16,7 +18,10 @@ impl<T: ShaderPathProvider> Default for Common2dPlugin<T> {
 impl<T: ShaderPathProvider> Plugin for Common2dPlugin<T> {
     fn build(&self, app: &mut App) {
         app
-            .add_plugins(Material2dPlugin::<MyMaterial2d<T>>::default())
+            .add_plugins((
+                Material2dPlugin::<MyMaterial2d<T>>::default(),
+                MyShaderLibraryPlugin
+            ))
             .insert_resource(MyMaterial2dHandle::<T>::default())
             .add_systems(Startup, setup::<T>)
             .add_systems(Update, (
