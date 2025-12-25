@@ -49,16 +49,11 @@ fn rgb2hsv(c: vec3f) -> vec3f {
 // 参考: Iñigo Quiles
 // https://www.shadertoy.com/view/MsS3Wc
 fn hsv2rgb(c: vec3f) -> vec3f {
-    // smoothstep(0.0, 1.0, x) は
-    // var rgb = clamp(x, 0.0, 1.0);
-    // rgb = rgb * rgb * (3.0 - 2.0 * rgb);
-    // と同じ
-    let rgb = smoothstep(
-        vec3(0.0), vec3(1.0),
-        // c.x * 6.0 + vec3(0.0, 4.0, 2.0) >= 0.0だからglslのmod関数の代わりに%を使える
-        // %演算子は -5.0 % 2.0 = -1.0 などの挙動をしてしまうため要注意
-        abs((c.x * 6.0 + vec3(0.0, 4.0, 2.0)) % 6.0 - 3.0) - 1.0,
+    var rgb = clamp(
+        abs(6.0 * fract(c.x + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) - 3.0) - 1.0,
+        vec3(0.0), vec3(1.0)
     );
+    rgb = rgb * rgb * (3.0 - 2.0 * rgb);
     // 明度 * mix(白, rgb, 彩度)
     return c.z * mix(vec3(1.0), rgb, c.y);
 }
