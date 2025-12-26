@@ -57,3 +57,12 @@ fn hsv2rgb(c: vec3f) -> vec3f {
     // 明度 * mix(白, rgb, 彩度)
     return c.z * mix(vec3(1.0), rgb, c.y);
 }
+
+fn rotate2D(angle: f32) -> mat2x2<f32> {
+    let c = cos(angle);
+    let s = sin(angle);
+    return mat2x2<f32>(
+        c, -s,
+        s,  c
+    );
+}
