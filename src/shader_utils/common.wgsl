@@ -66,3 +66,21 @@ fn rotate2D(angle: f32) -> mat2x2<f32> {
         s,  c
     );
 }
+
+fn yuv2rgb(c: vec3f) -> vec3f {
+    let mat = mat3x3<f32>(
+        1.0,       0.0,        1.13983,
+        1.0,      -0.39465,   -0.58060,
+        1.0,       2.03211,    0.0
+    );
+    return mat * c;
+}
+
+fn rgb2yuv(c: vec3f) -> vec3f {
+    let mat = mat3x3<f32>(
+        0.2126,    0.7152,     0.0722,
+       -0.09991,  -0.33609,    0.436,
+        0.61500,  -0.55861,   -0.05639
+    );
+    return mat * c;
+}
