@@ -141,10 +141,16 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     // );
 
     // wood grain
-    var pos = rotate2D(gradientNoise2D(uv * t)) * uv * 10.0;
-    pos = rotate2D(gradientNoise2D(pos + vec2(t))) * pos;
-    let pattern = lines(pos, abs(sin(t)), 10.0);
-    color = vec3(pattern);
+    // var pos = uv * vec2(10.0, 3.0);
+    // pos = rotate2D(gradientNoise2D(pos)) * pos;
+    // let pattern = lines(pos, 0.5, 10.0);
+    // color = vec3(pattern);
+
+    // splatter
+    let pos = uv + gradientNoise2D(uv * 2.0) * 2.0;
+    color = vec3(smoothstep(0.18, 0.2, gradientNoise2D(pos)));
+    color += vec3(smoothstep(0.15, 0.2, gradientNoise2D(pos * 10.0)));
+    color -= vec3(smoothstep(0.35, 0.4, gradientNoise2D(pos * 10.0)));
 
     return vec4(color, 1.0);
 }
