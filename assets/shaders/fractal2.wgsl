@@ -3,7 +3,11 @@
 #import bevy_render::view::View
 #import a_shader_a_day::shader_utils::common::{PI, TAU, rotate2D};
 
+struct Mymaterial {
+    mouse: vec2f,
+}
 @group(0) @binding(0) var<uniform> view: View;
+@group(2) @binding(0) var<uniform> my_material: Mymaterial;
 
 // 重六角推フラクタルのSDF
 fn sdH6fractal(pos: vec3f, iterations: u32) -> f32 {
@@ -46,7 +50,7 @@ fn sdH6fractal(pos: vec3f, iterations: u32) -> f32 {
         p *= 3.0;
         scale *= 3.0;
     }
-    return (length(p) - 3.0) / scale;
+    return (length(p) - 2.0) / scale;
 }
 
 @fragment
@@ -56,24 +60,30 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let resolution = view.viewport.zw;
     uv.x *= resolution.x / resolution.y;
     uv.y *= -1.0;
-    let t = globals.time;
+    // let t = globals.time;
+    let t = my_material.mouse.x * 10.0;
     var color = vec3(0.0);
 
     // カメラ位置とレイ方向の設定
     let omega = PI * 0.2;
-    let cam_pos = vec3(rotate2D(t * omega) * vec2(12.0, 0.0), 0.0);
-    let display_pos = vec3(rotate2D(t * omega) * vec2(4.0 , uv.x), uv.y);
+    let cam_pos = vec3(rotate2D(t * omega) * vec2(5000.0, 0.0), 0.0);
+    let display_pos = vec3(rotate2D(t * omega) * vec2(4.0 , uv.x * 1.6), uv.y * 1.6);
     let ray_dir = normalize(display_pos - cam_pos);
     // レイマーチング
     var total_dist = 0.0;
-    for (var step = 0; step < 200; step++) {
+    for (var step = 0; step < 100; step++) {
         let current_pos = cam_pos + ray_dir * total_dist;
-        let dist = sdH6fractal(current_pos, 10u);
+        let dist = sdH6fractal(current_pos, 4u);
         if (dist < 0.001) {
-            color = vec3(1.0 - pow(f32(step) / 100.0, 0.4)) * vec3(0.6, 0.8, 1.0);
+            let eps = 0.0001;
+            color = (normalize(vec3(
+                sdH6fractal(current_pos + vec3(eps, 0.0, 0.0), 4u) - sdH6fractal(current_pos - vec3(eps, 0.0, 0.0), 4u),
+                sdH6fractal(current_pos + vec3(0.0, eps, 0.0), 4u) - sdH6fractal(current_pos - vec3(0.0, eps, 0.0), 4u),
+                sdH6fractal(current_pos + vec3(0.0, 0.0, eps), 4u) - sdH6fractal(current_pos - vec3(0.0, 0.0, eps), 4u)
+            )) * 0.5 + 0.5) * (1.0 - f32(step) / 100.0);
             break;
         }
-        if (total_dist > 15.0) {
+        if (total_dist > 10000.0) {
             break;
         }
         total_dist += dist;
