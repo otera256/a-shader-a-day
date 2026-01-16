@@ -10,7 +10,7 @@ struct Mymaterial {
 @group(2) @binding(0) var<uniform> my_material: Mymaterial;
 
 // 重六角推フラクタルのSDF
-fn sdH6fractal(pos: vec3f, iterations: u32) -> f32 {
+fn sdH6fractal(pos: vec3f, iterations: u32, r: f32) -> f32 {
     var p = pos;
     var scale = 1.0;
 
@@ -50,7 +50,7 @@ fn sdH6fractal(pos: vec3f, iterations: u32) -> f32 {
         p *= 3.0;
         scale *= 3.0;
     }
-    return (length(p) - 2.0) / scale;
+    return (length(p) - r) / scale;
 }
 
 @fragment
@@ -62,6 +62,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     uv.y *= -1.0;
     // let t = globals.time;
     let t = my_material.mouse.x * 10.0;
+    let r = exp((my_material.mouse.y - 0.5) * 3.0) * 3.0;
     var color = vec3(0.0);
 
     // カメラ位置とレイ方向の設定
@@ -73,13 +74,13 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     var total_dist = 0.0;
     for (var step = 0; step < 100; step++) {
         let current_pos = cam_pos + ray_dir * total_dist;
-        let dist = sdH6fractal(current_pos, 4u);
+        let dist = sdH6fractal(current_pos, 4u, r);
         if (dist < 0.001) {
             let eps = 0.0001;
             color = (normalize(vec3(
-                sdH6fractal(current_pos + vec3(eps, 0.0, 0.0), 4u) - sdH6fractal(current_pos - vec3(eps, 0.0, 0.0), 4u),
-                sdH6fractal(current_pos + vec3(0.0, eps, 0.0), 4u) - sdH6fractal(current_pos - vec3(0.0, eps, 0.0), 4u),
-                sdH6fractal(current_pos + vec3(0.0, 0.0, eps), 4u) - sdH6fractal(current_pos - vec3(0.0, 0.0, eps), 4u)
+                sdH6fractal(current_pos + vec3(eps, 0.0, 0.0), 4u, r) - sdH6fractal(current_pos - vec3(eps, 0.0, 0.0), 4u, r),
+                sdH6fractal(current_pos + vec3(0.0, eps, 0.0), 4u, r) - sdH6fractal(current_pos - vec3(0.0, eps, 0.0), 4u, r),
+                sdH6fractal(current_pos + vec3(0.0, 0.0, eps), 4u, r) - sdH6fractal(current_pos - vec3(0.0, 0.0, eps), 4u, r)
             )) * 0.5 + 0.5) * (1.0 - f32(step) / 100.0);
             break;
         }
